@@ -59,7 +59,7 @@ tasks.withType<JavaCompile>().configureEach {
     }
 }
 
-description = "allows mapping of responses to content of chosen local file.\n"
+description = "Allows mapping of responses to content of a chosen local file."
 
 zapAddOn {
     addOnName.set("Map Local")
@@ -71,8 +71,7 @@ zapAddOn {
 
     manifest {
         author.set("Keindel (Andrey Maksimov)")
-        url.set("https://www.zaproxy.org/docs/desktop/addons/maplocal/")
-        repo.set("https://github.com/Keindel/maplocal")
+        repo.set("https://github.com/Keindel/owasp-zap-maplocal-addon")
         changesFile.set(tasks.named<ConvertMarkdownToHtml>("generateManifestChanges").flatMap { it.html })
 
         helpSet {

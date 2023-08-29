@@ -53,7 +53,7 @@ public class PopupMenuAddMapLocalHistory extends PopupMenuItemHistoryReferenceCo
         try {
             extensionMapLocal.addUiMapLocal(href.getHttpMessage());
         } catch (HttpMalformedHeaderException | DatabaseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
             extensionMapLocal
                     .getView()
                     .showWarningDialog(Constant.messages.getString("mapLocal.add.error.history"));

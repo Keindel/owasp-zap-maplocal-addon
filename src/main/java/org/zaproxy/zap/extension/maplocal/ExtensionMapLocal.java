@@ -20,8 +20,6 @@
 package org.zaproxy.zap.extension.maplocal;
 
 import java.awt.CardLayout;
-import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +36,6 @@ import org.parosproxy.paros.extension.ExtensionHook;
 import org.parosproxy.paros.extension.SessionChangedListener;
 import org.parosproxy.paros.model.Session;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.maplocal.db.RecordMapLocal;
 import org.zaproxy.zap.extension.maplocal.db.TableMapLocal;
@@ -49,10 +46,9 @@ import org.zaproxy.zap.extension.maplocal.view.MapLocalUiManagerImpl;
 import org.zaproxy.zap.extension.maplocal.view.MapLocalUiManagerInterface;
 import org.zaproxy.zap.extension.maplocal.view.popup.PopupMenuEditMapLocal;
 import org.zaproxy.zap.extension.maplocal.view.popup.PopupMenuRemoveMapLocal;
-import org.zaproxy.zap.view.ZapMenuItem;
 
 /**
- * An extension that adds Map Local feature. It allows user to map response bodies for chosen urls
+ * An extension that adds Map Local feature. It allows user to map response bodies for chosen URLs
  * to local files.
  */
 public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChangedListener {
@@ -71,12 +67,7 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
      */
     private static final String RESOURCES = "resources";
 
-    private static final String EXAMPLE_FILE = "example/ExampleFile.txt";
-
-    private ZapMenuItem menuExample;
     private MapLocalStatusPanel mapLocalPanel;
-
-    private MapLocalAPI api;
 
     private static final Logger LOGGER = LogManager.getLogger(ExtensionMapLocal.class);
 
@@ -100,17 +91,13 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
     public void hook(ExtensionHook extensionHook) {
         super.hook(extensionHook);
 
-        this.api = new MapLocalAPI();
-        extensionHook.addApiImplementor(this.api);
-
         mapLocalMessageHandler = new MapLocalMessageHandler();
-        extensionHook.addProxyListener(getProxyListenerMapLocal());
-        extensionHook.addSessionListener(this);
+
         // As long as we're not running as a daemon
         if (hasView()) {
-            extensionHook.getHookMenu().addToolsMenuItem(getMenuExample());
-            //            can be refactored as universal popup, if required
-            //            extensionHook.getHookMenu().addPopupMenuItem(getPopupMsgMenuExample());
+            extensionHook.addProxyListener(getProxyListenerMapLocal());
+            extensionHook.addSessionListener(this);
+
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuEditMapLocal());
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuDeleteMapLocal());
             extensionHook.getHookView().addStatusPanel(getMapLocalStatusPanel());
@@ -131,20 +118,12 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
 
     @Override
     public boolean canUnload() {
-        // The extension can be dynamically unloaded, all resources used/added can be freed/removed
-        // from core.
         return true;
     }
 
     @Override
     public void unload() {
         super.unload();
-
-        // In this example it's not necessary to override the method, as there's nothing to unload
-        // manually, the components added through the class ExtensionHook (in hook(ExtensionHook))
-        // are automatically removed by the base unload() method.
-        // If you use/add other components through other methods you might need to free/remove them
-        // here (if the extension declares that can be unloaded, see above method).
     }
 
     private MapLocalStatusPanel getMapLocalStatusPanel() {
@@ -156,52 +135,6 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
                     new ImageIcon(getClass().getResource(RESOURCES + "/maplocal.png")));
         }
         return mapLocalPanel;
-    }
-
-    private ZapMenuItem getMenuExample() {
-        if (menuExample == null) {
-            menuExample = new ZapMenuItem(PREFIX + ".topmenu.tools.title");
-
-            menuExample.addActionListener(
-                    e -> {
-                        // This is where you do what you want to do.
-                        // In this case we'll just show a popup message.
-                        View.getSingleton()
-                                .showMessageDialog(
-                                        Constant.messages.getString(PREFIX + ".topmenu.tools.msg"));
-                        // And display a file included with the add-on in the Output tab
-                        displayFile(EXAMPLE_FILE);
-                    });
-        }
-        return menuExample;
-    }
-
-    private static void displayFile(String file) {
-        if (!View.isInitialised()) {
-            // Running in daemon mode, shouldn't have been called
-            return;
-        }
-        try {
-            File f = new File(Constant.getZapHome(), file);
-            if (!f.exists()) {
-                // This is something the user should know, so show a warning dialog
-                View.getSingleton()
-                        .showWarningDialog(
-                                Constant.messages.getString(
-                                        ExtensionMapLocal.PREFIX + ".error.nofile",
-                                        f.getAbsolutePath()));
-                return;
-            }
-            // Quick way to read a small text file
-            String contents = new String(Files.readAllBytes(f.toPath()));
-            // Write to the output panel
-            View.getSingleton().getOutputPanel().append(contents);
-            // Give focus to the Output tab
-            View.getSingleton().getOutputPanel().setTabFocus();
-        } catch (Exception e) {
-            // Something unexpected went wrong, write the error to the log
-            LOGGER.error(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -261,7 +194,7 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
             int mapLocId = recordMapLocal.getMapLocalId();
             mapLocal.setMapLocalId(mapLocId);
         } catch (DatabaseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -283,7 +216,7 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
 
             newMapLocal.setMapLocalId(oldMapLocal.getMapLocalId());
         } catch (DatabaseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -297,7 +230,7 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
         try {
             dbTableMapLocal.deleteMapLocal(mapLocal.getMapLocalId());
         } catch (DatabaseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -337,7 +270,7 @@ public class ExtensionMapLocal extends ExtensionAdaptor implements SessionChange
                 this.getMapLocalStatusPanel().addMapLocal(mapLocal);
             }
         } catch (DatabaseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
