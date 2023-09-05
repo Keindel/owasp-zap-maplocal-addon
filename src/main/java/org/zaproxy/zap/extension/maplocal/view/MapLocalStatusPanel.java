@@ -229,7 +229,7 @@ public class MapLocalStatusPanel extends AbstractPanel {
                         }
                     });
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -253,7 +253,7 @@ public class MapLocalStatusPanel extends AbstractPanel {
                         }
                     });
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -275,7 +275,7 @@ public class MapLocalStatusPanel extends AbstractPanel {
                         }
                     });
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -289,7 +289,7 @@ public class MapLocalStatusPanel extends AbstractPanel {
             try {
                 this.preferences.flush();
             } catch (final BackingStoreException e) {
-                LOGGER.error("Error while saving the preferences", e);
+                LOGGER.warn("Error while saving the preferences", e);
             }
         }
     }

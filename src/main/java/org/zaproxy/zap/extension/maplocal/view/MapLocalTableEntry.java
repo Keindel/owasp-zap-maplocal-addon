@@ -173,7 +173,7 @@ public class MapLocalTableEntry {
                 }
                 return res;
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.warn(e.getMessage(), e);
             }
         }
         return false;

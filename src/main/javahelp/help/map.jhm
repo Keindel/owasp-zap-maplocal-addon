@@ -6,5 +6,4 @@
 <map version="1.0">
 	<mapID target="maplocal-icon" url="contents/images/maplocal.png" />
     <mapID target="maplocal" url="contents/maplocal.html" />
-    <mapID target="maplocal.about" url="contents/about.html" />
 </map>
